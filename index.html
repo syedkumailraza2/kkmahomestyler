@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="K.K.M.A. Homestyler - Professional AutoCAD 3D Interior Design Services">
+    <meta name="keywords" content="interior design, 3D design, AutoCAD, freelance, portfolio">
+    <title>K.K.M.A. Homestyler - Premium 3D Interior Design</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Custom theme colors based on logo */
+        :root {
+            --primary-orange: #ff6b35;
+            --primary-dark: #2c3e50;
+            --accent-orange: #ff8c42;
+            --light-bg: #f8f9fa;
+            --text-dark: #333333;
+            --text-light: #7f8c8d;
+            --white: #ffffff;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="logo.png" alt="K.K.M.A. Homestyler Logo" class="logo-img">
+                <h2>K.K.M.A. <span>Homestyler</span></h2>
+            </div>
+            <ul class="nav-menu" id="nav-menu">
+                <li class="nav-item">
+                    <a href="#home" class="nav-link">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#portfolio" class="nav-link">Portfolio</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#about" class="nav-link">About</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#contact" class="nav-link">Contact</a>
+                </li>
+            </ul>
+            <div class="hamburger" id="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1 class="hero-title">Transforming Spaces Into Masterpieces</h1>
+            <p class="hero-subtitle">Professional AutoCAD 3D Interior Design Services</p>
+            <div class="hero-buttons">
+                <a href="#portfolio" class="btn-primary">View Portfolio</a>
+                <a href="#contact" class="btn-secondary">Get Quote</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about">
+        <div class="container">
+            <h2 class="section-title">About K.K.M.A. Homestyler</h2>
+            <div class="about-content">
+                <div class="about-text">
+                    <h3>Crafting Exceptional Interior Experiences</h3>
+                    <p>Welcome to K.K.M.A. Homestyler, where creativity meets precision in AutoCAD 3D interior design. With years of experience in transforming residential and commercial spaces, we specialize in creating stunning, functional designs that bring your vision to life.</p>
+                    <p>Our expertise in AutoCAD 3D modeling allows us to provide you with photorealistic visualizations, ensuring you can see and approve every detail before implementation. From concept to completion, we're committed to delivering designs that exceed expectations.</p>
+                    <div class="expertise">
+                        <div class="expertise-item">
+                            <i class="fas fa-cube"></i>
+                            <h4>3D Modeling</h4>
+                            <p>Precision AutoCAD modeling for accurate spatial planning</p>
+                        </div>
+                        <div class="expertise-item">
+                            <i class="fas fa-paint-brush"></i>
+                            <h4>Interior Design</h4>
+                            <p>Comprehensive design solutions tailored to your style</p>
+                        </div>
+                        <div class="expertise-item">
+                            <i class="fas fa-eye"></i>
+                            <h4>Visualization</h4>
+                            <p>Photorealistic renders to preview your dream space</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Portfolio Section -->
+    <section id="portfolio" class="portfolio">
+        <div class="container">
+            <h2 class="section-title">Our Portfolio</h2>
+            <p class="section-subtitle">Explore our latest interior design projects</p>
+
+            <div class="portfolio-filters">
+                <button class="filter-btn active" data-filter="all">All Projects</button>
+                <button class="filter-btn" data-filter="residential">Residential</button>
+                <button class="filter-btn" data-filter="commercial">Commercial</button>
+                <button class="filter-btn" data-filter="3d-models">3D Models</button>
+            </div>
+
+            <div class="portfolio-grid">
+                <div class="portfolio-item" data-category="residential">
+                    <div class="portfolio-image">
+                        <img src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Modern Living Room Design">
+                        <div class="portfolio-overlay">
+                            <div class="portfolio-info">
+                                <h3>Modern Living Room</h3>
+                                <p>Contemporary residential design with optimal space utilization</p>
+                                <button class="view-project" data-project="living-room">
+                                    <i class="fas fa-expand"></i> View Project
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="portfolio-item" data-category="commercial">
+                    <div class="portfolio-image">
+                        <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Office Interior Design">
+                        <div class="portfolio-overlay">
+                            <div class="portfolio-info">
+                                <h3>Corporate Office Space</h3>
+                                <p>Professional commercial interior with functional layout</p>
+                                <button class="view-project" data-project="office">
+                                    <i class="fas fa-expand"></i> View Project
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="portfolio-item" data-category="residential">
+                    <div class="portfolio-image">
+                        <img src="https://images.unsplash.com/photo-1618221195710-dd6b41faa6cb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Kitchen Design">
+                        <div class="portfolio-overlay">
+                            <div class="portfolio-info">
+                                <h3>Modern Kitchen</h3>
+                                <p>Luxury kitchen design with premium materials and appliances</p>
+                                <button class="view-project" data-project="kitchen">
+                                    <i class="fas fa-expand"></i> View Project
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="portfolio-item" data-category="3d-models">
+                    <div class="portfolio-image">
+                        <img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="3D Bedroom Model">
+                        <div class="portfolio-overlay">
+                            <div class="portfolio-info">
+                                <h3>3D Bedroom Visualization</h3>
+                                <p>Detailed AutoCAD 3D model with realistic rendering</p>
+                                <button class="view-project" data-project="bedroom-3d">
+                                    <i class="fas fa-expand"></i> View Project
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="portfolio-item" data-category="commercial">
+                    <div class="portfolio-image">
+                        <img src="https://images.unsplash.com/photo-1546814296-7c648fbd0093?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Restaurant Design">
+                        <div class="portfolio-overlay">
+                            <div class="portfolio-info">
+                                <h3>Restaurant Interior</h3>
+                                <p>Ambient dining space with optimized customer flow</p>
+                                <button class="view-project" data-project="restaurant">
+                                    <i class="fas fa-expand"></i> View Project
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="portfolio-item" data-category="residential">
+                    <div class="portfolio-image">
+                        <img src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Master Bedroom">
+                        <div class="portfolio-overlay">
+                            <div class="portfolio-info">
+                                <h3>Master Bedroom Suite</h3>
+                                <p>Luxurious bedroom design with custom furniture layout</p>
+                                <button class="view-project" data-project="master-bedroom">
+                                    <i class="fas fa-expand"></i> View Project
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact">
+        <div class="container">
+            <h2 class="section-title">Get In Touch</h2>
+            <p class="section-subtitle">Let's discuss your interior design project</p>
+
+            <div class="contact-content">
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <i class="fas fa-phone"></i>
+                        <div>
+                            <h3>Phone</h3>
+                            <p><a href="tel:+918953007463">+91 8953007463</a></p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-envelope"></i>
+                        <div>
+                            <h3>Email</h3>
+                            <p><a href="mailto:vasihaidar7272@gmail.com">vasihaidar7272@gmail.com</a></p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-clock"></i>
+                        <div>
+                            <h3>Business Hours</h3>
+                            <p>Monday - Saturday: 9:00 AM - 7:00 PM</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="contact-form">
+                    <form id="contact-form">
+                        <div class="form-group">
+                            <input type="text" id="name" name="name" placeholder="Your Name" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" id="email" name="email" placeholder="Your Email" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="tel" id="phone" name="phone" placeholder="Your Phone Number">
+                        </div>
+                        <div class="form-group">
+                            <select id="project-type" name="project-type" required>
+                                <option value="">Select Project Type</option>
+                                <option value="residential">Residential Design</option>
+                                <option value="commercial">Commercial Design</option>
+                                <option value="3d-modeling">3D Modeling Only</option>
+                                <option value="consultation">Design Consultation</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <textarea id="message" name="message" rows="5" placeholder="Tell us about your project..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn-submit">Send Message</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <h3>K.K.M.A. <span>Homestyler</span></h3>
+                    <p>Premium AutoCAD 3D Interior Design Services</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#portfolio">Portfolio</a></li>
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-contact">
+                    <h4>Contact Info</h4>
+                    <p><i class="fas fa-phone"></i> +91 8953007463</p>
+                    <p><i class="fas fa-envelope"></i> vasihaidar7272@gmail.com</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 K.K.M.A. Homestyler. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modal for Project Details -->
+    <div id="project-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div id="modal-body">
+                <!-- Project details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Message Popup -->
+    <div id="success-overlay" class="success-overlay"></div>
+    <div id="success-message" class="success-message">
+        <button class="close-success" aria-label="Close success message">
+            <i class="fas fa-times"></i>
+        </button>
+        <i class="fas fa-check-circle"></i>
+        <p>Message sent successfully! We'll get back to you soon.</p>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
