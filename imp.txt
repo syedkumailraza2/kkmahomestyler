@@ -1,0 +1,3 @@
+serviceID: service_m14kp9u
+templeteID: template_1zw9q8g
+publicKey: SRUGN4DszRyHgNxsW

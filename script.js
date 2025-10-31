@@ -14,6 +14,11 @@ const closeSuccessBtn = document.querySelector('.close-success');
 const filterBtns = document.querySelectorAll('.filter-btn');
 const portfolioItems = document.querySelectorAll('.portfolio-item');
 
+// Initialize EmailJS
+(function() {
+    emailjs.init("SRUGN4DszRyHgNxsW"); // This will be replaced with actual public key
+})();
+
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
     initializeNavigation();
@@ -302,21 +307,42 @@ function initializeContactForm() {
         submitBtn.innerHTML = '<span class="loading"></span> Sending...';
         submitBtn.disabled = true;
 
-        // Simulate form submission (replace with actual implementation)
-        setTimeout(() => {
-            // Reset form
-            contactForm.reset();
+        // Prepare email parameters
+        const emailParams = {
+            from_name: formDataObj.name,
+            from_email: formDataObj.email,
+            from_phone: formDataObj.phone || 'Not provided',
+            project_type: formDataObj['project-type'],
+            message: formDataObj.message,
+            to_email: 'syedkumailraza28@gmail.com',
+            reply_to: formDataObj.email
+        };
 
-            // Restore button
-            submitBtn.textContent = originalText;
-            submitBtn.disabled = false;
+        // Send email using EmailJS
+        emailjs.send('service_m14kp9u', 'template_1zw9q8g', emailParams)
+            .then(function(response) {
+                console.log('SUCCESS!', response.status, response.text);
 
-            // Show success message
-            showSuccessMessage();
+                // Reset form
+                contactForm.reset();
 
-            // In a real implementation, you would send the data to your server here
-            console.log('Form submitted:', formDataObj);
-        }, 2000);
+                // Restore button
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+
+                // Show success message
+                showSuccessMessage();
+            })
+            .catch(function(error) {
+                console.log('FAILED...', error);
+
+                // Show error message
+                showError('Failed to send message. Please try again later.');
+
+                // Restore button
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            });
     });
 
     // Form validation
@@ -376,6 +402,41 @@ function hideSuccessMessage() {
 
     // Restore body scroll
     document.body.style.overflow = 'auto';
+}
+
+function showError(message) {
+    // Create error message element
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-message';
+    errorDiv.innerHTML = `
+        <i class="fas fa-exclamation-circle"></i>
+        <p>${message}</p>
+    `;
+
+    // Add error styles
+    errorDiv.style.cssText = `
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        background: #e74c3c;
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: all 0.3s ease;
+        z-index: 3000;
+        font-weight: 500;
+    `;
+
+    document.body.appendChild(errorDiv);
+
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        errorDiv.remove();
+    }, 5000);
 }
 
 // Scroll to top button
