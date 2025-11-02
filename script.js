@@ -14,6 +14,38 @@ const closeSuccessBtn = document.querySelector('.close-success');
 const filterBtns = document.querySelectorAll('.filter-btn');
 const portfolioItems = document.querySelectorAll('.portfolio-item');
 
+// Rating system elements
+const ratingStars = document.querySelectorAll('.user-rating-stars i');
+const submitRatingBtn = document.getElementById('submit-rating');
+const ratingComment = document.getElementById('rating-comment');
+const ratingSuccessMessage = document.getElementById('rating-success-message');
+const reviewerNameInput = document.getElementById('reviewer-name');
+const reviewerEmailInput = document.getElementById('reviewer-email');
+const ratingErrorMessage = document.getElementById('rating-error');
+const errorMessage = document.getElementById('error-message');
+const reviewsContainer = document.getElementById('reviews-container');
+
+// Toast notification elements
+const toast = document.getElementById('toast');
+const toastMessage = document.getElementById('toast-message');
+
+// Reviews display elements
+const reviewsSummary = document.getElementById('reviews-summary');
+const sortReviewsSelect = document.getElementById('sort-reviews');
+const scrollLeftBtn = document.getElementById('scroll-left');
+const scrollRightBtn = document.getElementById('scroll-right');
+const reviewsNavigation = document.getElementById('reviews-navigation');
+const scrollIndicator = document.getElementById('scroll-indicator');
+const scrollPosition = document.getElementById('scroll-position');
+
+// Reviews state
+let allReviews = [];
+let currentScrollPosition = 0;
+let reviewsPerView = 3; // Show 3 reviews at a time
+
+// Carousel state
+let carouselInterval = null;
+
 // Initialize EmailJS
 (function() {
     emailjs.init("SRUGN4DszRyHgNxsW"); // This will be replaced with actual public key
@@ -27,6 +59,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeContactForm();
     initializeModal();
     initializeSuccessPopup();
+    initializeRatingSystem();
     createScrollToTopButton();
 });
 
@@ -75,6 +108,20 @@ function initializeScrollEffects() {
             scrollTopBtn.classList.add('show');
         } else {
             scrollTopBtn.classList.remove('show');
+        }
+
+        // Check if user has scrolled to footer
+        const footer = document.querySelector('.footer');
+        if (footer) {
+            const footerTop = footer.getBoundingClientRect().top;
+            const windowHeight = window.innerHeight;
+
+            // When footer is visible (within viewport)
+            if (footerTop < windowHeight) {
+                scrollTopBtn.classList.add('in-footer');
+            } else {
+                scrollTopBtn.classList.remove('in-footer');
+            }
         }
     });
 
@@ -206,25 +253,33 @@ const projectDetails = {
 function initializeModal() {
     // Close modal when clicking the X button
     closeModal.addEventListener('click', function() {
-        modal.style.display = 'none';
-        document.body.style.overflow = 'auto';
+        closeModalFunction();
     });
 
     // Close modal when clicking outside
     window.addEventListener('click', function(event) {
         if (event.target === modal) {
-            modal.style.display = 'none';
-            document.body.style.overflow = 'auto';
+            closeModalFunction();
         }
     });
 
     // Close modal with Escape key
     document.addEventListener('keydown', function(event) {
         if (event.key === 'Escape' && modal.style.display === 'block') {
-            modal.style.display = 'none';
-            document.body.style.overflow = 'auto';
+            closeModalFunction();
         }
     });
+}
+
+function closeModalFunction() {
+    modal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+
+    // Clear carousel interval when modal is closed
+    if (carouselInterval) {
+        clearInterval(carouselInterval);
+        carouselInterval = null;
+    }
 }
 
 function initializeSuccessPopup() {
@@ -271,22 +326,82 @@ function initializeSuccessPopup() {
 }
 
 function showProjectDetails(projectId) {
-    const project = projectDetails[projectId];
-    if (!project) return;
+    // Clone the template content
+    const template = document.getElementById('project-template');
+    const templateContent = template.querySelector('.project-details').cloneNode(true);
 
-    const imageUrl = `https://images.unsplash.com/photo-${Math.floor(Math.random() * 1000000000)}?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80`;
+    // Clear and populate modal
+    modalBody.innerHTML = '';
+    modalBody.appendChild(templateContent);
 
-    modalBody.innerHTML = `
-        <img src="${imageUrl}" alt="${project.title}">
-        <h3>${project.title}</h3>
-        <p>${project.description}</p>
-        <ul>
-            ${project.details.map(detail => `<li>${detail}</li>`).join('')}
-        </ul>
-    `;
+    // Initialize carousel functionality
+    initializeCarousel();
 
+    // Show modal
     modal.style.display = 'block';
     document.body.style.overflow = 'hidden';
+}
+
+function initializeCarousel() {
+    // Clear any existing carousel interval
+    if (carouselInterval) {
+        clearInterval(carouselInterval);
+    }
+
+    // Get carousel elements from current modal
+    const slides = document.querySelectorAll('.carousel-slide');
+    const indicators = document.querySelectorAll('.indicator');
+    const prevBtn = document.querySelector('.carousel-prev');
+    const nextBtn = document.querySelector('.carousel-next');
+
+    console.log('Found slides:', slides.length); // Debug log
+
+    let currentSlide = 0;
+
+    function showSlide(index) {
+        // Ensure index is within bounds
+        if (index < 0 || index >= slides.length) return;
+
+        // Hide all slides
+        slides.forEach(slide => slide.classList.remove('active'));
+        indicators.forEach(indicator => indicator.classList.remove('active'));
+
+        // Show current slide
+        slides[index].classList.add('active');
+        indicators[index].classList.add('active');
+        currentSlide = index;
+    }
+
+    function nextSlide() {
+        const nextIndex = (currentSlide + 1) % slides.length;
+        showSlide(nextIndex);
+    }
+
+    function prevSlide() {
+        const prevIndex = (currentSlide - 1 + slides.length) % slides.length;
+        showSlide(prevIndex);
+    }
+
+    // Remove existing event listeners to prevent duplicates
+    const newPrevBtn = prevBtn.cloneNode(true);
+    const newNextBtn = nextBtn.cloneNode(true);
+    prevBtn.parentNode.replaceChild(newPrevBtn, prevBtn);
+    nextBtn.parentNode.replaceChild(newNextBtn, nextBtn);
+
+    // Event listeners
+    newNextBtn.addEventListener('click', nextSlide);
+    newPrevBtn.addEventListener('click', prevSlide);
+
+    // Indicator clicks
+    indicators.forEach((indicator, index) => {
+        indicator.addEventListener('click', () => showSlide(index));
+    });
+
+    // Auto-advance carousel
+    carouselInterval = setInterval(nextSlide, 5000); // Change slide every 5 seconds
+
+    // Initialize first slide
+    showSlide(0);
 }
 
 // Contact form functionality
@@ -556,3 +671,561 @@ document.addEventListener('click', function(e) {
         });
     }
 });
+
+// Rating System
+function initializeRatingSystem() {
+    let selectedRating = 0;
+
+    // Handle star hover effects
+    ratingStars.forEach((star, index) => {
+        star.addEventListener('mouseenter', function() {
+            highlightStars(index + 1);
+        });
+
+        star.addEventListener('mouseleave', function() {
+            highlightStars(selectedRating);
+        });
+
+        star.addEventListener('click', function() {
+            selectedRating = index + 1;
+            setSelectedRating(selectedRating);
+        });
+    });
+
+    // Handle submit rating
+    if (submitRatingBtn) {
+        submitRatingBtn.addEventListener('click', function() {
+            submitRating(selectedRating);
+        });
+    }
+
+    // Handle sort change
+    if (sortReviewsSelect) {
+        sortReviewsSelect.addEventListener('change', function() {
+            sortAndDisplayReviews();
+        });
+    }
+
+    // Handle navigation buttons
+    if (scrollLeftBtn) {
+        scrollLeftBtn.addEventListener('click', function() {
+            scrollReviews('left');
+        });
+    }
+
+    if (scrollRightBtn) {
+        scrollRightBtn.addEventListener('click', function() {
+            scrollReviews('right');
+        });
+    }
+
+    // Handle scroll events
+    if (reviewsContainer) {
+        reviewsContainer.addEventListener('scroll', handleScrollEvent);
+    }
+}
+
+function highlightStars(rating) {
+    ratingStars.forEach((star, index) => {
+        if (index < rating) {
+            star.classList.add('hovered');
+            star.classList.remove('far');
+            star.classList.add('fas');
+        } else {
+            star.classList.remove('hovered');
+            star.classList.remove('fas');
+            star.classList.add('far');
+        }
+    });
+}
+
+function setSelectedRating(rating) {
+    ratingStars.forEach((star, index) => {
+        if (index < rating) {
+            star.classList.add('selected');
+            star.classList.remove('far');
+            star.classList.add('fas');
+        } else {
+            star.classList.remove('selected');
+            star.classList.remove('fas');
+            star.classList.add('far');
+        }
+    });
+}
+
+function submitRating(rating) {
+    // Validate form
+    const name = reviewerNameInput ? reviewerNameInput.value.trim() : '';
+    const email = reviewerEmailInput ? reviewerEmailInput.value.trim() : '';
+    const comment = ratingComment ? ratingComment.value.trim() : '';
+
+    // Check required fields
+    if (!name) {
+        showRatingError('Please enter your name.');
+        return;
+    }
+
+    if (!email) {
+        showRatingError('Please enter your email address.');
+        return;
+    }
+
+    if (!validateEmail(email)) {
+        showRatingError('Please enter a valid email address.');
+        return;
+    }
+
+    if (rating === 0) {
+        showRatingError('Please select a rating before submitting.');
+        return;
+    }
+
+    // Check if email has already submitted a review
+    const ratings = JSON.parse(localStorage.getItem('kkmaRatings') || '[]');
+    const existingReview = ratings.find(r => r.email && r.email.toLowerCase() === email.toLowerCase());
+
+    if (existingReview) {
+        showRatingError('You have already submitted a review with this email address.');
+        return;
+    }
+
+    // Create review object
+    const review = {
+        name: name,
+        email: email.toLowerCase(),
+        rating: rating,
+        comment: comment,
+        date: new Date().toISOString()
+    };
+
+    // Store review in localStorage
+    ratings.push(review);
+    localStorage.setItem('kkmaRatings', JSON.stringify(ratings));
+
+    console.log('Review submitted:', review);
+
+    // Update displays
+    updateRatingDisplay(ratings);
+    displayReviews(ratings);
+
+    // Show success message
+    showRatingSuccess();
+
+    // Reset form after delay
+    setTimeout(() => {
+        resetRatingForm();
+    }, 2000);
+}
+
+function validateEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+function showRatingError(message) {
+    if (errorMessage) {
+        errorMessage.textContent = message;
+    }
+    if (ratingErrorMessage) {
+        ratingErrorMessage.classList.add('show');
+
+        // Hide error message after 5 seconds
+        setTimeout(() => {
+            ratingErrorMessage.classList.remove('show');
+        }, 5000);
+    }
+}
+
+function showRatingSuccess() {
+    showToast('Review submitted successfully! Thank you for your feedback.');
+}
+
+function showToast(message) {
+    if (toast && toastMessage) {
+        toastMessage.textContent = message;
+        toast.classList.add('show');
+
+        // Hide toast after 4 seconds
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 4000);
+    }
+}
+
+function resetRatingForm() {
+    // Reset stars
+    setSelectedRating(0);
+
+    // Clear all form fields
+    if (reviewerNameInput) {
+        reviewerNameInput.value = '';
+    }
+    if (reviewerEmailInput) {
+        reviewerEmailInput.value = '';
+    }
+    if (ratingComment) {
+        ratingComment.value = '';
+    }
+}
+
+// Load existing ratings on page load
+function loadRatings() {
+    let ratings = JSON.parse(localStorage.getItem('kkmaRatings') || '[]');
+
+    // Filter out any legacy ratings that don't have email (these would be dummy ratings)
+    ratings = ratings.filter(rating => rating.email && rating.name);
+
+    // Save filtered ratings back to localStorage
+    localStorage.setItem('kkmaRatings', JSON.stringify(ratings));
+
+    updateRatingDisplay(ratings);
+    displayReviews(ratings);
+}
+
+function updateRatingDisplay(ratings) {
+    if (ratings.length === 0) {
+        // Reset to empty state
+        updateOverallRating(0, 0);
+        updateRatingBreakdown([0, 0, 0, 0, 0]);
+        return;
+    }
+
+    // Calculate rating statistics
+    const ratingCounts = [0, 0, 0, 0, 0]; // 1-star, 2-star, 3-star, 4-star, 5-star
+    let totalRating = 0;
+
+    ratings.forEach(rating => {
+        const ratingValue = Math.min(5, Math.max(1, rating.rating)); // Ensure rating is between 1-5
+        ratingCounts[ratingValue - 1]++;
+        totalRating += ratingValue;
+    });
+
+    const averageRating = totalRating / ratings.length;
+
+    // Update displays
+    updateOverallRating(averageRating, ratings.length);
+    updateRatingBreakdown(ratingCounts);
+
+    console.log('Average rating:', averageRating.toFixed(1));
+    console.log('Total ratings:', ratings.length);
+    console.log('Rating distribution:', ratingCounts);
+}
+
+function updateOverallRating(averageRating, totalCount) {
+    const ratingNumber = document.getElementById('overall-rating-number');
+    const ratingCount = document.getElementById('rating-count');
+    const ratingStars = document.getElementById('overall-rating-stars');
+
+    if (ratingNumber) {
+        ratingNumber.textContent = averageRating.toFixed(1);
+    }
+
+    if (ratingCount) {
+        const reviewText = totalCount === 1 ? 'review' : 'reviews';
+        ratingCount.textContent = `Based on ${totalCount} ${reviewText}`;
+    }
+
+    if (ratingStars) {
+        updateStarDisplay(ratingStars, averageRating);
+    }
+}
+
+function updateStarDisplay(container, rating) {
+    const stars = container.querySelectorAll('i');
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+
+    stars.forEach((star, index) => {
+        star.classList.remove('fas', 'fa-star', 'fa-star-half-alt', 'far');
+
+        if (index < fullStars) {
+            star.classList.add('fas', 'fa-star');
+        } else if (index === fullStars && hasHalfStar) {
+            star.classList.add('fas', 'fa-star-half-alt');
+        } else {
+            star.classList.add('far', 'fa-star');
+        }
+    });
+}
+
+function updateRatingBreakdown(ratingCounts) {
+    const totalCount = ratingCounts.reduce((sum, count) => sum + count, 0);
+
+    if (totalCount === 0) {
+        // Reset all to 0%
+        for (let i = 1; i <= 5; i++) {
+            updateRatingBar(i, 0, 0);
+        }
+        return;
+    }
+
+    // Update each rating bar (from 5-star down to 1-star)
+    for (let i = 5; i >= 1; i--) {
+        const count = ratingCounts[i - 1];
+        const percentage = Math.round((count / totalCount) * 100);
+        updateRatingBar(i, count, percentage);
+    }
+}
+
+function updateRatingBar(starNumber, count, percentage) {
+    const bar = document.getElementById(`bar-${starNumber}`);
+    const percentageText = document.getElementById(`percentage-${starNumber}`);
+
+    if (bar) {
+        bar.style.width = `${percentage}%`;
+    }
+
+    if (percentageText) {
+        percentageText.textContent = `${percentage}%`;
+    }
+}
+
+function displayReviews(ratings) {
+    if (!reviewsContainer) return;
+
+    allReviews = ratings;
+    currentScrollPosition = 0;
+
+    if (ratings.length === 0) {
+        reviewsContainer.innerHTML = `
+            <div class="no-reviews-message">
+                <i class="fas fa-star"></i>
+                <h3>No Reviews Yet</h3>
+                <p>Be the first to share your experience with K.K.M.A. Homestyler!</p>
+                <a href="#rating" class="btn btn-primary">Write a Review</a>
+            </div>
+        `;
+        updateReviewsSummary(0, 0);
+        hideNavigation();
+        return;
+    }
+
+    // Update summary
+    const averageRating = calculateAverageRating(ratings);
+    updateReviewsSummary(ratings.length, averageRating);
+
+    // Sort and display reviews
+    sortAndDisplayReviews();
+}
+
+function sortAndDisplayReviews() {
+    const sortValue = sortReviewsSelect ? sortReviewsSelect.value : 'newest';
+    const sortedReviews = sortReviews(allReviews, sortValue);
+
+    // Generate all review cards HTML
+    const reviewsHTML = sortedReviews.map(review => createReviewCard(review)).join('');
+    reviewsContainer.innerHTML = reviewsHTML;
+
+    // Reset scroll position
+    currentScrollPosition = 0;
+    if (reviewsContainer) {
+        reviewsContainer.scrollLeft = 0;
+    }
+
+    // Update navigation
+    updateNavigation(sortedReviews.length);
+}
+
+function updateNavigation(totalReviews) {
+    if (totalReviews <= reviewsPerView) {
+        hideNavigation();
+    } else {
+        showNavigation();
+        updateScrollIndicator(totalReviews);
+        updateNavigationButtons(totalReviews);
+    }
+}
+
+function showNavigation() {
+    if (reviewsNavigation) {
+        reviewsNavigation.style.display = 'flex';
+    }
+    if (scrollIndicator) {
+        scrollIndicator.style.display = 'block';
+    }
+}
+
+function hideNavigation() {
+    if (reviewsNavigation) {
+        reviewsNavigation.style.display = 'none';
+    }
+    if (scrollIndicator) {
+        scrollIndicator.style.display = 'none';
+    }
+}
+
+function updateScrollIndicator(totalReviews) {
+    const totalPages = Math.ceil(totalReviews / reviewsPerView);
+    const currentPage = Math.floor(currentScrollPosition / reviewsPerView) + 1;
+
+    if (scrollPosition) {
+        scrollPosition.textContent = `${currentPage} / ${totalPages}`;
+    }
+}
+
+function updateNavigationButtons(totalReviews) {
+    const maxPosition = Math.max(0, totalReviews - reviewsPerView);
+
+    if (scrollLeftBtn) {
+        scrollLeftBtn.disabled = currentScrollPosition <= 0;
+    }
+
+    if (scrollRightBtn) {
+        scrollRightBtn.disabled = currentScrollPosition >= maxPosition;
+    }
+}
+
+function scrollReviews(direction) {
+    const sortValue = sortReviewsSelect ? sortReviewsSelect.value : 'newest';
+    const sortedReviews = sortReviews(allReviews, sortValue);
+    const totalReviews = sortedReviews.length;
+    const maxPosition = Math.max(0, totalReviews - reviewsPerView);
+
+    if (direction === 'left') {
+        currentScrollPosition = Math.max(0, currentScrollPosition - reviewsPerView);
+    } else {
+        currentScrollPosition = Math.min(maxPosition, currentScrollPosition + reviewsPerView);
+    }
+
+    // Scroll to position
+    if (reviewsContainer) {
+        const cardWidth = 350; // Width of each review card
+        const gap = 24; // Gap between cards (1.5rem = 24px)
+        const scrollAmount = currentScrollPosition * (cardWidth + gap);
+        reviewsContainer.scrollLeft = scrollAmount;
+    }
+
+    // Update UI
+    updateScrollIndicator(totalReviews);
+    updateNavigationButtons(totalReviews);
+}
+
+function sortReviews(reviews, sortBy) {
+    const sorted = [...reviews];
+
+    switch (sortBy) {
+        case 'newest':
+            return sorted.sort((a, b) => new Date(b.date) - new Date(a.date));
+        case 'oldest':
+            return sorted.sort((a, b) => new Date(a.date) - new Date(b.date));
+        case 'highest':
+            return sorted.sort((a, b) => b.rating - a.rating);
+        case 'lowest':
+            return sorted.sort((a, b) => a.rating - b.rating);
+        default:
+            return sorted.sort((a, b) => new Date(b.date) - new Date(a.date));
+    }
+}
+
+function calculateAverageRating(ratings) {
+    if (ratings.length === 0) return 0;
+    const sum = ratings.reduce((total, review) => total + review.rating, 0);
+    return sum / ratings.length;
+}
+
+function updateReviewsSummary(count, average) {
+    if (!reviewsSummary) return;
+
+    const reviewText = count === 1 ? 'Review' : 'Reviews';
+    reviewsSummary.innerHTML = `
+        <span class="reviews-count">${count} ${reviewText}</span>
+        <span class="reviews-average">• Average: ${average.toFixed(1)}</span>
+    `;
+}
+
+function handleScrollEvent() {
+    if (!reviewsContainer) return;
+
+    const sortValue = sortReviewsSelect ? sortReviewsSelect.value : 'newest';
+    const sortedReviews = sortReviews(allReviews, sortValue);
+    const totalReviews = sortedReviews.length;
+
+    const cardWidth = 350;
+    const gap = 24;
+    const scrollPosition = reviewsContainer.scrollLeft;
+
+    // Calculate current position based on scroll offset
+    currentScrollPosition = Math.round(scrollPosition / (cardWidth + gap));
+
+    // Update UI
+    updateScrollIndicator(totalReviews);
+    updateNavigationButtons(totalReviews);
+}
+
+function createReviewCard(review) {
+    const date = new Date(review.date);
+    const formattedDate = date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+
+    const starsHTML = generateStarRating(review.rating);
+    const displayName = review.name.charAt(0).toUpperCase() + review.name.slice(1);
+    const commentHTML = review.comment ? `<p class="review-comment">${review.comment}</p>` : '';
+
+    return `
+        <div class="review-card">
+            <div class="review-header">
+                <div class="reviewer-info">
+                    <div class="reviewer-name">${displayName}</div>
+                    <div class="review-date">${formattedDate}</div>
+                </div>
+                <div class="review-rating">
+                    ${starsHTML}
+                </div>
+            </div>
+            ${commentHTML}
+        </div>
+    `;
+}
+
+function generateStarRating(rating) {
+    let starsHTML = '';
+    for (let i = 1; i <= 5; i++) {
+        if (i <= rating) {
+            starsHTML += '<i class="fas fa-star"></i>';
+        } else {
+            starsHTML += '<i class="far fa-star"></i>';
+        }
+    }
+    return starsHTML;
+}
+
+// Initialize rating system when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    loadRatings();
+
+    // Fix portfolio image loading issues
+    fixPortfolioImages();
+});
+
+function fixPortfolioImages() {
+    const portfolioImages = document.querySelectorAll('.portfolio-image img');
+
+    portfolioImages.forEach(img => {
+        // Handle image loading errors
+        img.addEventListener('error', function() {
+            console.log('Portfolio image failed to load:', this.src);
+            // Try to create a placeholder if the image fails to load
+            if (!this.src.includes('placeholder')) {
+                this.style.background = 'var(--light-gray)';
+                this.style.display = 'flex';
+                this.style.alignItems = 'center';
+                this.style.justifyContent = 'center';
+                this.innerHTML = '<div style="text-align: center; color: var(--text-light);"><i class="fas fa-image" style="font-size: 3rem; margin-bottom: 1rem;"></i><p>Interior Design</p></div>';
+            }
+        });
+
+        // Handle successful image loading
+        img.addEventListener('load', function() {
+            this.style.background = 'transparent';
+        });
+
+        // Check if image is already loaded or has errors
+        if (img.complete && img.naturalHeight === 0) {
+            // Image failed to load
+            img.dispatchEvent(new Event('error'));
+        }
+    });
+}
