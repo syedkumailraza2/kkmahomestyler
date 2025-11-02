@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Integration Test - K.K.M.A. Homestyler</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            margin: 0;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2rem;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            color: #ffd700;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .test-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .test-section h3 {
+            color: #ffd700;
+            margin-top: 0;
+        }
+
+        button {
+            background: #ffd700;
+            color: #0a0a0a;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: #ffed4e;
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #ffd700;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .success {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid #4caf50;
+            color: #4caf50;
+        }
+
+        .error {
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid #f44336;
+            color: #f44336;
+        }
+
+        .info {
+            background: rgba(33, 150, 243, 0.2);
+            border: 1px solid #2196f3;
+            color: #2196f3;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #ffd700;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            color: #ffffff;
+            font-size: 16px;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #ffd700;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .rating-stars {
+            font-size: 24px;
+            color: #ffd700;
+        }
+
+        .rating-stars i {
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .rating-stars i:hover,
+        .rating-stars i.active {
+            color: #ffd700;
+        }
+
+        .rating-stars i:not(.active) {
+            color: #666;
+        }
+
+        .status {
+            text-align: center;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .status.connected {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid #4caf50;
+            color: #4caf50;
+        }
+
+        .status.disconnected {
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid #f44336;
+            color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏠 K.K.M.A. Homestyler API Integration Test</h1>
+
+        <div id="connection-status" class="status disconnected">
+            <span id="status-text">Checking API connection...</span>
+        </div>
+
+        <!-- API Health Check -->
+        <div class="test-section">
+            <h3>🔍 API Health Check</h3>
+            <button onclick="testHealth()">Test API Health</button>
+            <div id="health-result" class="result" style="display: none;"></div>
+        </div>
+
+        <!-- Get Statistics -->
+        <div class="test-section">
+            <h3>📊 Get Rating Statistics</h3>
+            <button onclick="testGetStatistics()">Load Statistics</button>
+            <div id="stats-result" class="result" style="display: none;"></div>
+        </div>
+
+        <!-- Get Reviews -->
+        <div class="test-section">
+            <h3>📝 Get Reviews</h3>
+            <button onclick="testGetReviews()">Load Reviews</button>
+            <div id="reviews-result" class="result" style="display: none;"></div>
+        </div>
+
+        <!-- Submit Review -->
+        <div class="test-section">
+            <h3>✍️ Submit Test Review</h3>
+            <form id="test-review-form">
+                <div class="form-group">
+                    <label for="test-name">Name:</label>
+                    <input type="text" id="test-name" value="Test User" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="test-email">Email:</label>
+                    <input type="email" id="test-email" value="test@example.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Rating:</label>
+                    <div class="rating-stars" id="test-rating">
+                        <i class="far fa-star" data-rating="1"></i>
+                        <i class="far fa-star" data-rating="2"></i>
+                        <i class="far fa-star" data-rating="3"></i>
+                        <i class="far fa-star" data-rating="4"></i>
+                        <i class="far fa-star" data-rating="5"></i>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="test-comment">Comment:</label>
+                    <textarea id="test-comment" rows="3" placeholder="This is a test review from the integration test page.">This is a test review from the integration test page. The service was excellent!</textarea>
+                </div>
+
+                <button type="submit">Submit Test Review</button>
+            </form>
+            <div id="submit-result" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:5000/api/v1';
+        let selectedRating = 5;
+
+        // Initialize rating stars
+        document.addEventListener('DOMContentLoaded', function() {
+            const stars = document.querySelectorAll('#test-rating i');
+            stars.forEach(star => {
+                star.addEventListener('click', function() {
+                    selectedRating = parseInt(this.dataset.rating);
+                    updateRatingDisplay(selectedRating);
+                });
+
+                star.addEventListener('mouseenter', function() {
+                    const hoverRating = parseInt(this.dataset.rating);
+                    updateRatingDisplay(hoverRating);
+                });
+            });
+
+            document.getElementById('test-rating').addEventListener('mouseleave', function() {
+                updateRatingDisplay(selectedRating);
+            });
+
+            // Set initial rating
+            updateRatingDisplay(selectedRating);
+
+            // Test API connection on load
+            testHealth();
+
+            // Setup form submission
+            document.getElementById('test-review-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                testSubmitReview();
+            });
+        });
+
+        function updateRatingDisplay(rating) {
+            const stars = document.querySelectorAll('#test-rating i');
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.remove('far');
+                    star.classList.add('fas', 'active');
+                } else {
+                    star.classList.remove('fas', 'active');
+                    star.classList.add('far');
+                }
+            });
+        }
+
+        async function apiRequest(endpoint, options = {}) {
+            const url = `${API_BASE_URL}${endpoint}`;
+            const defaultOptions = {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            };
+            const config = { ...defaultOptions, ...options };
+
+            try {
+                const response = await fetch(url, config);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    if (data.errors && Array.isArray(data.errors)) {
+                        throw new Error(data.errors.map(err => err.message).join('. '));
+                    } else if (data.message) {
+                        throw new Error(data.message);
+                    } else {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                }
+
+                return data;
+            } catch (error) {
+                if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+                    throw new Error('Unable to connect to the server. Make sure the backend is running on localhost:5000');
+                }
+                throw error;
+            }
+        }
+
+        function showResult(elementId, data, isSuccess = true) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = `result ${isSuccess ? 'success' : 'error'}`;
+            element.textContent = JSON.stringify(data, null, 2);
+        }
+
+        function updateConnectionStatus(isConnected, message) {
+            const status = document.getElementById('connection-status');
+            const statusText = document.getElementById('status-text');
+
+            if (isConnected) {
+                status.className = 'status connected';
+                statusText.textContent = message || '✅ Connected to API';
+            } else {
+                status.className = 'status disconnected';
+                statusText.textContent = message || '❌ API Connection Failed';
+            }
+        }
+
+        async function testHealth() {
+            const resultElement = document.getElementById('health-result');
+            resultElement.style.display = 'block';
+            resultElement.className = 'result info';
+            resultElement.innerHTML = '<div class="loading"></div>Testing API connection...';
+
+            try {
+                const result = await apiRequest('/health');
+                showResult('health-result', result, true);
+                updateConnectionStatus(true, '✅ API is running and healthy');
+            } catch (error) {
+                showResult('health-result', { error: error.message }, false);
+                updateConnectionStatus(false, `❌ ${error.message}`);
+            }
+        }
+
+        async function testGetStatistics() {
+            const resultElement = document.getElementById('stats-result');
+            resultElement.style.display = 'block';
+            resultElement.className = 'result info';
+            resultElement.innerHTML = '<div class="loading"></div>Loading statistics...';
+
+            try {
+                const result = await apiRequest('/reviews/statistics');
+                showResult('stats-result', result, true);
+            } catch (error) {
+                showResult('stats-result', { error: error.message }, false);
+            }
+        }
+
+        async function testGetReviews() {
+            const resultElement = document.getElementById('reviews-result');
+            resultElement.style.display = 'block';
+            resultElement.className = 'result info';
+            resultElement.innerHTML = '<div class="loading"></div>Loading reviews...';
+
+            try {
+                const result = await apiRequest('/reviews?limit=10');
+                showResult('reviews-result', result, true);
+            } catch (error) {
+                showResult('reviews-result', { error: error.message }, false);
+            }
+        }
+
+        async function testSubmitReview() {
+            const name = document.getElementById('test-name').value;
+            const email = document.getElementById('test-email').value;
+            const comment = document.getElementById('test-comment').value;
+
+            const resultElement = document.getElementById('submit-result');
+            resultElement.style.display = 'block';
+            resultElement.className = 'result info';
+            resultElement.innerHTML = '<div class="loading"></div>Submitting review...';
+
+            try {
+                const result = await apiRequest('/reviews', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        name: name,
+                        email: email.toLowerCase(),
+                        rating: selectedRating,
+                        comment: comment
+                    })
+                });
+
+                showResult('submit-result', result, true);
+
+                // Refresh reviews and stats after successful submission
+                setTimeout(() => {
+                    testGetReviews();
+                    testGetStatistics();
+                }, 1000);
+
+            } catch (error) {
+                showResult('submit-result', { error: error.message }, false);
+            }
+        }
+    </script>
+</body>
+</html>

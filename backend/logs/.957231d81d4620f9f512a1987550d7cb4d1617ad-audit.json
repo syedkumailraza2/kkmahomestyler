@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "/home/kumail/Freelance/Arshad Bhai Portfolio/KKMA_HomeStyler/backend/logs/.957231d81d4620f9f512a1987550d7cb4d1617ad-audit.json",
+    "files": [
+        {
+            "date": 1762103263066,
+            "name": "/home/kumail/Freelance/Arshad Bhai Portfolio/KKMA_HomeStyler/backend/logs/combined-2025-11-02.log",
+            "hash": "6655dc9a7bd7fb2d29dac30fef9cbfbbfafa107fe4b9792d2ae1f585bdf72526"
+        }
+    ],
+    "hashType": "sha256"
+}

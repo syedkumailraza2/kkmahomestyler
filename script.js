@@ -607,7 +607,7 @@ document.addEventListener('DOMContentLoaded', function() {
     images.forEach(img => imageObserver.observe(img));
 });
 
-// Add CSS for fade-in animation
+// Add CSS for fade-in animation and loading states
 const style = document.createElement('style');
 style.textContent = `
     .fade-in {
@@ -619,6 +619,66 @@ style.textContent = `
             opacity: 0;
         }
         to {
+            opacity: 1;
+        }
+    }
+
+    .reviews-loading {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem;
+        color: var(--text-light);
+    }
+
+    .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid rgba(255, 255, 255, 0.1);
+        border-top: 4px solid var(--accent);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 1rem;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .no-reviews-message {
+        text-align: center;
+        padding: 3rem;
+        color: var(--text-light);
+    }
+
+    .no-reviews-message i {
+        font-size: 3rem;
+        color: var(--accent);
+        margin-bottom: 1rem;
+    }
+
+    .no-reviews-message h3 {
+        margin-bottom: 0.5rem;
+        color: var(--text);
+    }
+
+    .no-reviews-message p {
+        margin-bottom: 1.5rem;
+    }
+
+    .toast.show {
+        animation: slideInRight 0.3s ease forwards;
+    }
+
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
             opacity: 1;
         }
     }
@@ -753,7 +813,46 @@ function setSelectedRating(rating) {
     });
 }
 
-function submitRating(rating) {
+// API Configuration
+const API_BASE_URL = 'http://localhost:5000/api/v1';
+
+// Add request interceptor for better error handling
+async function apiRequest(endpoint, options = {}) {
+    const url = `${API_BASE_URL}${endpoint}`;
+
+    const defaultOptions = {
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    };
+
+    const config = { ...defaultOptions, ...options };
+
+    try {
+        const response = await fetch(url, config);
+        const data = await response.json();
+
+        if (!response.ok) {
+            // Handle server errors
+            if (data.errors && Array.isArray(data.errors)) {
+                throw new Error(data.errors.map(err => err.message).join('. '));
+            } else if (data.message) {
+                throw new Error(data.message);
+            } else {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+        }
+
+        return data;
+    } catch (error) {
+        if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+            throw new Error('Unable to connect to the server. Please check your internet connection and try again.');
+        }
+        throw error;
+    }
+}
+
+async function submitRating(rating) {
     // Validate form
     const name = reviewerNameInput ? reviewerNameInput.value.trim() : '';
     const email = reviewerEmailInput ? reviewerEmailInput.value.trim() : '';
@@ -780,41 +879,46 @@ function submitRating(rating) {
         return;
     }
 
-    // Check if email has already submitted a review
-    const ratings = JSON.parse(localStorage.getItem('kkmaRatings') || '[]');
-    const existingReview = ratings.find(r => r.email && r.email.toLowerCase() === email.toLowerCase());
-
-    if (existingReview) {
-        showRatingError('You have already submitted a review with this email address.');
-        return;
+    // Show loading state
+    if (submitRatingBtn) {
+        submitRatingBtn.disabled = true;
+        submitRatingBtn.innerHTML = '<span class="loading"></span> Submitting...';
     }
 
-    // Create review object
-    const review = {
-        name: name,
-        email: email.toLowerCase(),
-        rating: rating,
-        comment: comment,
-        date: new Date().toISOString()
-    };
+    try {
+        const result = await apiRequest('/reviews', {
+            method: 'POST',
+            body: JSON.stringify({
+                name: name,
+                email: email.toLowerCase(),
+                rating: rating,
+                comment: comment
+            })
+        });
 
-    // Store review in localStorage
-    ratings.push(review);
-    localStorage.setItem('kkmaRatings', JSON.stringify(ratings));
+        console.log('Review submitted successfully:', result);
 
-    console.log('Review submitted:', review);
+        // Refresh the reviews display
+        await loadReviewsFromAPI();
 
-    // Update displays
-    updateRatingDisplay(ratings);
-    displayReviews(ratings);
+        // Show success message with backend message
+        showRatingSuccess(result.message || 'Review submitted successfully! Thank you for your feedback.');
 
-    // Show success message
-    showRatingSuccess();
+        // Reset form after delay
+        setTimeout(() => {
+            resetRatingForm();
+        }, 2000);
 
-    // Reset form after delay
-    setTimeout(() => {
-        resetRatingForm();
-    }, 2000);
+    } catch (error) {
+        console.error('Error submitting review:', error);
+        showRatingError(error.message || 'Failed to submit review. Please try again later.');
+    } finally {
+        // Reset button state
+        if (submitRatingBtn) {
+            submitRatingBtn.disabled = false;
+            submitRatingBtn.innerHTML = 'Submit Review';
+        }
+    }
 }
 
 function validateEmail(email) {
@@ -836,8 +940,8 @@ function showRatingError(message) {
     }
 }
 
-function showRatingSuccess() {
-    showToast('Review submitted successfully! Thank you for your feedback.');
+function showRatingSuccess(message = 'Review submitted successfully! Thank you for your feedback.') {
+    showToast(message);
 }
 
 function showToast(message) {
@@ -868,21 +972,89 @@ function resetRatingForm() {
     }
 }
 
-// Load existing ratings on page load
-function loadRatings() {
-    let ratings = JSON.parse(localStorage.getItem('kkmaRatings') || '[]');
+// Load reviews from API on page load
+async function loadRatings() {
+    try {
+        // Load both reviews and statistics in parallel for better performance
+        const [reviewsResult, statsResult] = await Promise.allSettled([
+            loadReviewsFromAPI(),
+            loadStatisticsFromAPI()
+        ]);
 
-    // Filter out any legacy ratings that don't have email (these would be dummy ratings)
-    ratings = ratings.filter(rating => rating.email && rating.name);
+        // Handle individual failures
+        if (reviewsResult.status === 'rejected') {
+            console.error('Error loading reviews:', reviewsResult.reason);
+            // Fallback to empty state if reviews fail to load
+            updateRatingDisplay([]);
+            displayReviews([]);
+        }
 
-    // Save filtered ratings back to localStorage
-    localStorage.setItem('kkmaRatings', JSON.stringify(ratings));
+        if (statsResult.status === 'rejected') {
+            console.error('Error loading statistics:', statsResult.reason);
+            // Statistics will be calculated from reviews if stats fail
+        }
 
-    updateRatingDisplay(ratings);
-    displayReviews(ratings);
+    } catch (error) {
+        console.error('Error loading reviews:', error);
+        // Fallback to empty state if API fails
+        updateRatingDisplay([]);
+        displayReviews([]);
+    }
 }
 
-function updateRatingDisplay(ratings) {
+async function loadReviewsFromAPI() {
+    try {
+        // Load reviews with pagination
+        const reviewsResult = await apiRequest('/reviews?limit=100&sortBy=createdAt&sortOrder=desc');
+
+        const reviews = reviewsResult.data.map(review => ({
+            id: review.id,
+            name: review.name,
+            email: review.email,
+            rating: review.rating,
+            comment: review.comment,
+            date: review.createdAt
+        }));
+
+        updateRatingDisplay(reviews);
+        displayReviews(reviews);
+
+    } catch (error) {
+        console.error('Error loading reviews from API:', error);
+        throw error;
+    }
+}
+
+async function loadStatisticsFromAPI() {
+    try {
+        const result = await apiRequest('/reviews/statistics');
+        const stats = result.data;
+        updateRatingDisplay([], stats); // Use stats to update display
+        return stats;
+    } catch (error) {
+        console.error('Error loading statistics:', error);
+        throw error;
+    }
+}
+
+function updateRatingDisplay(ratings, stats = null) {
+    // If stats are provided (from API), use them directly
+    if (stats && typeof stats === 'object') {
+        updateOverallRating(stats.averageRating, stats.totalReviews);
+        if (stats.ratingDistribution) {
+            const ratingCounts = [
+                stats.ratingDistribution[1],
+                stats.ratingDistribution[2],
+                stats.ratingDistribution[3],
+                stats.ratingDistribution[4],
+                stats.ratingDistribution[5]
+            ];
+            updateRatingBreakdown(ratingCounts);
+        }
+        return;
+    }
+
+    // Fallback: calculate from reviews if no stats provided
     if (ratings.length === 0) {
         // Reset to empty state
         updateOverallRating(0, 0);
@@ -1194,11 +1366,26 @@ function generateStarRating(rating) {
 
 // Initialize rating system when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
+    // Show loading state for reviews
+    showReviewsLoading();
+
+    // Load reviews from API
     loadRatings();
 
     // Fix portfolio image loading issues
     fixPortfolioImages();
 });
+
+function showReviewsLoading() {
+    if (!reviewsContainer) return;
+
+    reviewsContainer.innerHTML = `
+        <div class="reviews-loading">
+            <div class="loading-spinner"></div>
+            <p>Loading reviews...</p>
+        </div>
+    `;
+}
 
 function fixPortfolioImages() {
     const portfolioImages = document.querySelectorAll('.portfolio-image img');
