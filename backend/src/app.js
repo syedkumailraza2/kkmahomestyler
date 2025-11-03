@@ -112,18 +112,22 @@ process.on('uncaughtException', (err) => {
   process.exit(1);
 });
 
-const PORT = process.env.PORT || 5000;
-const server = app.listen(PORT, () => {
-  logger.info(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
-});
-
-// Handle server shutdown gracefully
-process.on('SIGTERM', () => {
-  logger.info('SIGTERM received. Shutting down gracefully...');
-  server.close(() => {
-    logger.info('Process terminated');
-    process.exit(0);
-  });
-});
-
+// Export for Vercel serverless functions
 module.exports = app;
+
+// Only start server if not in Vercel environment
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+    const PORT = process.env.PORT || 5000;
+    const server = app.listen(PORT, () => {
+        logger.info(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+    });
+
+    // Handle server shutdown gracefully
+    process.on('SIGTERM', () => {
+        logger.info('SIGTERM received. Shutting down gracefully...');
+        server.close(() => {
+            logger.info('Process terminated');
+            process.exit(0);
+        });
+    });
+}
