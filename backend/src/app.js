@@ -115,8 +115,8 @@ process.on('uncaughtException', (err) => {
 // Export for Vercel serverless functions
 module.exports = app;
 
-// Only start server if not in Vercel environment
-if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+// Only start server if not running in Vercel
+if (!process.env.VERCEL) {
     const PORT = process.env.PORT || 5000;
     const server = app.listen(PORT, () => {
         logger.info(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);

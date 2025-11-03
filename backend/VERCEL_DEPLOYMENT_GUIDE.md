@@ -143,53 +143,21 @@ After deployment, update your frontend to use the new Vercel API URL:
 
 ## Step 5: Run Migration (One-time Setup)
 
-Since Vercel is serverless, you need to run the migration once:
+Since Vercel is serverless, you need to run the migration once using the existing migration script:
 
-1. **Create Migration Script:**
-   Create a temporary script `scripts/vercel-migrate.js`:
-   ```javascript
-   const mongoose = require('mongoose');
-   const Review = require('../src/models/Review');
-   require('dotenv').config();
-
-   const migrate = async () => {
-     try {
-       await mongoose.connect(process.env.MONGODB_URI);
-       console.log('Connected to MongoDB');
-
-       // Check if reviews exist
-       const count = await Review.countDocuments();
-       if (count === 0) {
-         const seedData = [
-           {
-             name: 'Sarah Johnson',
-             email: 'sarah.johnson@email.com',
-             rating: 5,
-             comment: 'Absolutely fantastic work! K.K.M.A. Homestyler transformed our living space beyond our expectations.',
-             approved: true
-           },
-           // ... other seed data
-         ];
-         await Review.insertMany(seedData);
-         console.log('Sample reviews inserted');
-       }
-
-       await mongoose.disconnect();
-       console.log('Migration completed');
-     } catch (error) {
-       console.error('Migration failed:', error);
-       process.exit(1);
-     }
-   };
-
-   migrate();
+1. **Update Environment Variables:**
+   Create a temporary `.env` file with your production MongoDB URI:
+   ```bash
+   MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/kkma_homestyler
    ```
 
 2. **Run Migration Locally:**
    ```bash
    cd backend
-   MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/kkma_homestyler node scripts/vercel-migrate.js
+   npm run migrate
    ```
+
+   This will use the existing `scripts/migrate.js` to connect to your production database and insert sample data.
 
 ## Step 6: Test the Deployment
 
@@ -211,15 +179,16 @@ Since Vercel is serverless, you need to run the migration once:
 ## Vercel Configuration Details
 
 ### vercel.json Structure
-- **Builds**: Creates serverless function from `api/index.js`
-- **Routes**: Routes all requests to the serverless function
+- **Builds**: Creates serverless function from `src/app.js`
+- **Routes**: Routes all requests to the Express app
 - **Functions**: Configures 30s timeout and 1GB memory
 - **Headers**: Adds CORS headers for all routes
 
-### Serverless Function (api/index.js)
-- Wraps Express app for Vercel compatibility
-- Handles CORS headers
-- Manages preflight OPTIONS requests
+### Express App (src/app.js)
+- Exports Express app for Vercel compatibility
+- Detects Vercel environment via `process.env.VERCEL`
+- Only starts server when running locally
+- Handles all API routes and middleware
 
 ### Environment-Specific Code
 - Detects Vercel environment via `process.env.VERCEL`
