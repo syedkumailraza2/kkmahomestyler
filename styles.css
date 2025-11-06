@@ -845,6 +845,37 @@ section {
     margin-right: 0.8rem;
 }
 
+/* Footer Profile Styles */
+.footer-profile {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.footer-profile-img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--accent-gold);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease;
+}
+
+.footer-profile-img:hover {
+    transform: scale(1.05);
+}
+
+.footer-contact-info {
+    flex: 1;
+}
+
+.footer-contact-info p {
+    margin-bottom: 0.3rem;
+    font-size: 0.9rem;
+}
+
 .footer-bottom {
     text-align: center;
     padding-top: 2rem;
@@ -1143,6 +1174,12 @@ section {
 
     .expertise {
         grid-template-columns: 1fr;
+    }
+
+    .footer-profile {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.8rem;
     }
 }
 
