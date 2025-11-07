@@ -1,7 +1,7 @@
 # EmailJS Setup Instructions
 
 ## Overview
-The contact form is now integrated with EmailJS to send emails directly to `syedkumailraza28@gmail.com`. Follow these steps to complete the setup.
+The contact form is now integrated with EmailJS to send emails directly to `vasihaidar7272@gmail.com`. Follow these steps to complete the setup.
 
 ## Step 1: Create EmailJS Account
 1. Go to [EmailJS.com](https://www.emailjs.com/)
@@ -75,7 +75,7 @@ The contact form is now integrated with EmailJS to send emails directly to `syed
 - `{{from_phone}}` - Contact person's phone
 - `{{project_type}}` - Type of project requested
 - `{{message}}` - The message content
-- `{{to_email}}` - Your email (syedkumailraza28@gmail.com)
+- `{{to_email}}` - Your email (vasihaidar7272@gmail.com)
 - `{{reply_to}}` - Reply-to email (contact person's email)
 
 3. Note your **Template ID** (it will look like `template_xxxxxxxxx`)
@@ -108,11 +108,11 @@ Replace the placeholder values in `script.js`:
 ## Testing
 1. Save all files
 2. Test the contact form by submitting a message
-3. Check your email (syedkumailraza28@gmail.com) for the message
+3. Check your email (vasihaidar7272@gmail.com) for the message
 4. Verify that all form fields are correctly populated in the email
 
 ## Features
-- ✅ Sends emails directly to `syedkumailraza28@gmail.com`
+- ✅ Sends emails directly to `vasihaidar7272@gmail.com`
 - ✅ Professional HTML email formatting
 - ✅ Form validation and error handling
 - ✅ Loading states and success/error messages

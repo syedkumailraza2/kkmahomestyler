@@ -429,7 +429,7 @@ function initializeContactForm() {
             from_phone: formDataObj.phone || 'Not provided',
             project_type: formDataObj['project-type'],
             message: formDataObj.message,
-            to_email: 'syedkumailraza28@gmail.com',
+            to_email: 'vasihaidar7272@gmail.com',
             reply_to: formDataObj.email
         };
 
@@ -814,7 +814,7 @@ function setSelectedRating(rating) {
 }
 
 // API Configuration
-const API_BASE_URL = 'http://localhost:5000/api/v1';
+const API_BASE_URL = 'http://localhost:5001/api';
 
 // Add request interceptor for better error handling
 async function apiRequest(endpoint, options = {}) {
@@ -834,8 +834,8 @@ async function apiRequest(endpoint, options = {}) {
 
         if (!response.ok) {
             // Handle server errors
-            if (data.errors && Array.isArray(data.errors)) {
-                throw new Error(data.errors.map(err => err.message).join('. '));
+            if (data.error) {
+                throw new Error(data.error);
             } else if (data.message) {
                 throw new Error(data.message);
             } else {
@@ -898,6 +898,9 @@ async function submitRating(rating) {
 
         console.log('Review submitted successfully:', result);
 
+        // Send email notification to vasihaider about the new review
+        await sendReviewNotificationEmail(name, email, rating, comment);
+
         // Refresh the reviews display
         await loadReviewsFromAPI();
 
@@ -918,6 +921,43 @@ async function submitRating(rating) {
             submitRatingBtn.disabled = false;
             submitRatingBtn.innerHTML = 'Submit Review';
         }
+    }
+}
+
+// Send email notification to vasihaider about new review
+async function sendReviewNotificationEmail(customerName, customerEmail, rating, comment) {
+    try {
+        // Create star rating display
+        const starDisplay = '⭐'.repeat(rating) + '☆'.repeat(5 - rating);
+
+        // Format the review comment
+        const reviewComment = comment || 'No comment provided';
+
+        // Prepare email parameters for review notification
+        const reviewEmailParams = {
+            from_name: 'KKMA Website',
+            from_email: 'noreply@kkmahomestyler.com',
+            to_email: 'vasihaidar7272@gmail.com',
+            reply_to: customerEmail,
+            customer_name: customerName,
+            customer_email: customerEmail,
+            rating_stars: starDisplay,
+            rating_number: `${rating}/5`,
+            review_comment: reviewComment,
+            notification_type: 'new_review',
+            subject: `🌟 New Review: ${customerName} gave ${rating}/5 stars`
+        };
+
+        // Send email using EmailJS
+        const response = await emailjs.send('service_m14kp9u', 'template_1zw9q8g', reviewEmailParams);
+        console.log('Review notification email sent successfully:', response);
+
+        return response;
+    } catch (error) {
+        console.error('Error sending review notification email:', error);
+        // Don't throw error to prevent breaking the review submission process
+        // Just log the error for debugging
+        return null;
     }
 }
 
@@ -1004,16 +1044,16 @@ async function loadRatings() {
 
 async function loadReviewsFromAPI() {
     try {
-        // Load reviews with pagination
-        const reviewsResult = await apiRequest('/reviews?limit=100&sortBy=createdAt&sortOrder=desc');
+        // Load reviews from simple backend
+        const reviewsResult = await apiRequest('/reviews');
 
-        const reviews = reviewsResult.data.map(review => ({
+        const reviews = reviewsResult.map(review => ({
             id: review.id,
             name: review.name,
             email: review.email,
             rating: review.rating,
             comment: review.comment,
-            date: review.createdAt
+            date: review.date
         }));
 
         updateRatingDisplay(reviews);
@@ -1027,8 +1067,8 @@ async function loadReviewsFromAPI() {
 
 async function loadStatisticsFromAPI() {
     try {
-        const result = await apiRequest('/reviews/statistics');
-        const stats = result.data;
+        const result = await apiRequest('/rating');
+        const stats = result;
         updateRatingDisplay([], stats); // Use stats to update display
         return stats;
     } catch (error) {

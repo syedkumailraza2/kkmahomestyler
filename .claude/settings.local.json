@@ -1,7 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(convert:*)"
+      "Bash(convert:*)",
+      "Bash(python3:*)",
+      "Bash(source:*)",
+      "Bash(pip install:*)",
+      "Bash(curl:*)",
+      "Bash(npm install)"
     ],
     "deny": [],
     "ask": []
